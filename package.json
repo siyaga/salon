@@ -1,4 +1,7 @@
 {
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
     "start": "node server.js",
     "dev": "set NODE_OPTIONS=--openssl-legacy-provider&& nodemon server.js"
