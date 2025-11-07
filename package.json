@@ -1,0 +1,21 @@
+{
+  "scripts": {
+    "start": "node server.js",
+    "dev": "set NODE_OPTIONS=--openssl-legacy-provider&& nodemon server.js"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "csurf": "^1.11.0",
+    "dotenv": "^17.2.3",
+    "ejs": "^3.1.10",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.2.1",
+    "express-session": "^1.18.2",
+    "googleapis": "^164.1.0",
+    "moment-timezone": "^0.6.0",
+    "sanitize-html": "^2.17.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}

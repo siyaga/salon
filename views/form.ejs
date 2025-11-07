@@ -1,0 +1,319 @@
+<%- include('partials/header') %>
+
+<div class="row justify-content-center">
+  <div class="col-md-6 col-lg-5">
+    <div class="card shadow-lg border-0 rounded-4">
+      <div class="card-body p-4 p-md-5">
+        <div class="text-center mb-4">
+          <img
+            src="/img/logo.png"
+            alt="<%= appName %> Logo"
+            style="height: 50px; margin-bottom: 10px"
+          />
+          <h3 class="fw-bold mt-2">Reservasi <%= appName %></h3>
+          <p class="text-muted">Booking Antrian Anda Sekarang</p>
+        </div>
+
+        <form action="/submit" method="POST" id="form-antrian" novalidate>
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+
+          <div class="mb-3">
+            <label for="cabang" class="form-label">Pilih Cabang</label>
+            <select class="form-select" id="cabang" name="cabang" required>
+              <option value="" disabled selected>
+                -- Tentukan Lokasi Cabang --
+              </option>
+              <% if (branches && branches.length > 0) { %> <%
+              branches.forEach(branch => { %>
+              <option value="<%= branch %>"><%= branch %></option>
+              <% }) %> <% } %>
+            </select>
+            <div class="invalid-feedback">Anda harus memilih cabang.</div>
+          </div>
+
+          <div class="mb-3">
+            <label for="nama" class="form-label">Nama Anda</label>
+            <input
+              type="text"
+              class="form-control"
+              id="nama"
+              name="nama"
+              required
+            />
+            <div class="invalid-feedback">Nama wajib diisi.</div>
+          </div>
+          <div class="mb-3">
+            <label for="no_wa" class="form-label">Nomor WhatsApp</label>
+            <input
+              type="tel"
+              class="form-control"
+              id="no_wa"
+              name="no_wa"
+              placeholder="0812..."
+              required
+              pattern="^(\+62|62|0)8[0-9]{8,12}$"
+            />
+            <div class="invalid-feedback">
+              Format nomor WA salah (cth: 0812...).
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="tgl_lahir" class="form-label">Tanggal Lahir</label>
+              <input
+                type="date"
+                class="form-control"
+                id="tgl_lahir"
+                name="tgl_lahir"
+                required
+              />
+              <div
+                class="form-text small text-muted"
+                style="margin-top: 0.25rem"
+              >
+                (untuk promo ulang tahun)
+              </div>
+              <div class="invalid-feedback">Tanggal lahir wajib diisi.</div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="jam_datang" class="form-label">Jam Reservasi</label>
+              <input
+                type="time"
+                class="form-control"
+                id="jam_datang"
+                name="jam_datang"
+                required
+              />
+              <div class="invalid-feedback">Jam reservasi wajib diisi.</div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="alamat" class="form-label">Alamat Singkat</label>
+            <textarea
+              class="form-control"
+              id="alamat"
+              name="alamat"
+              rows="2"
+              placeholder="cth: Jl. Merdeka No. 10"
+              required
+            ></textarea>
+            <div class="invalid-feedback">Alamat wajib diisi.</div>
+          </div>
+
+          <div class="mb-3">
+            <label for="note" class="form-label">Note (Opsional)</label>
+            <textarea
+              class="form-control"
+              id="note"
+              name="note"
+              rows="2"
+              placeholder="Kebutuhan khusus, alergi, request stylist, dll."
+            ></textarea>
+          </div>
+
+          <div class="mb-3" id="paket-group">
+            <label class="form-label">Pilih Paket (Bisa lebih dari satu)</label>
+            <% if (groupedPackages && groupedPackages.length > 0) { %> <%
+            groupedPackages.forEach((group, groupIndex) => { %>
+            <h6 class="fw-bold mt-3 mb-2 ps-1"><%= group.kategori %></h6>
+            <% group.paket.forEach((paket, paketIndex) => { %>
+            <div class="form-check ps-4 mb-2">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                name="paket"
+                value="<%= paket.nama %>"
+                id="paket-<%= groupIndex %>-<%= paketIndex %>"
+              />
+              <label
+                class="form-check-label"
+                for="paket-<%= groupIndex %>-<%= paketIndex %>"
+              >
+                <strong class="d-block"><%= paket.nama %></strong>
+                <span class="text-muted small">
+                  <i class="bi bi-clock"></i> <%= paket.durasi %>
+                </span>
+                <span class="text-muted small d-block" style="font-size: 0.8em">
+                  <%= paket.deskripsi %>
+                </span>
+              </label>
+            </div>
+            <% }) %> <% }) %> <% } else { %>
+            <p class="text-muted small">Gagal memuat paket. Coba refresh.</p>
+            <% } %>
+            <input
+              type="text"
+              id="paket-validation-helper"
+              required
+              style="
+                width: 0;
+                height: 0;
+                padding: 0;
+                border: none;
+                opacity: 0;
+                position: absolute;
+              "
+            />
+            <div class="invalid-feedback">
+              Paket wajib dipilih (minimal satu).
+            </div>
+          </div>
+
+          <div class="d-grid mt-4">
+            <button
+              type="button"
+              class="btn btn-primary btn-lg"
+              id="btn-show-modal"
+            >
+              <i class="bi bi-ticket-perforated me-2"></i>Ambil Nomor Antrian
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div
+  class="modal fade"
+  id="konfirmasiModal"
+  tabindex="-1"
+  aria-labelledby="modalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content" style="border-radius: 0.75rem">
+      <div class="modal-header border-0">
+        <h5 class="modal-title" id="modalLabel">Konfirmasi Data</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <p>Apakah data di bawah ini sudah benar?</p>
+        <div class="alert alert-secondary">
+          <strong><i class="bi bi-shop-window me-2"></i>Cabang:</strong>
+          <span id="konfirmasi-cabang" class="float-end fw-bold"></span>
+          <br />
+          <strong><i class="bi bi-person-fill me-2"></i>Nama:</strong>
+          <span id="konfirmasi-nama" class="float-end"></span>
+          <br />
+          <strong><i class="bi bi-whatsapp me-2"></i>No. WA:</strong>
+          <span id="konfirmasi-wa" class="float-end"></span>
+          <br />
+          <strong><i class="bi bi-house-fill me-2"></i>Alamat:</strong>
+          <span id="konfirmasi-alamat" class="float-end"></span>
+          <br />
+          <strong><i class="bi bi-calendar-heart me-2"></i>Tgl. Lahir:</strong>
+          <span id="konfirmasi-tgl-lahir" class="float-end"></span>
+          <br />
+          <strong><i class="bi bi-clock-fill me-2"></i>Jam:</strong>
+          <span id="konfirmasi-jam-datang" class="float-end"></span>
+          <br />
+          <strong><i class="bi bi-chat-left-text me-2"></i>Note:</strong>
+          <span id="konfirmasi-note" class="float-end"></span>
+          <br />
+          <strong><i class="bi bi-scissors me-2"></i>Paket:</strong>
+          <div
+            id="konfirmasi-paket"
+            class="text-end"
+            style="font-weight: 500"
+          ></div>
+        </div>
+      </div>
+      <div class="modal-footer border-0">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          data-bs-dismiss="modal"
+          style="border-radius: 0.5rem"
+        >
+          Batal
+        </button>
+        <button type="button" class="btn btn-primary" id="btn-submit-form">
+          Ya, Yakin!
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("form-antrian");
+    const btnShowModal = document.getElementById("btn-show-modal");
+    const modalElement = document.getElementById("konfirmasiModal");
+    const modal = new bootstrap.Modal(modalElement);
+    const btnSubmitForm = document.getElementById("btn-submit-form");
+    const paketCheckboxes = document.querySelectorAll('input[name="paket"]');
+    const paketValidationHelper = document.getElementById(
+      "paket-validation-helper"
+    );
+    function updatePaketValidation() {
+      const checkedCheckboxes = document.querySelectorAll(
+        'input[name="paket"]:checked'
+      );
+      if (checkedCheckboxes.length > 0) {
+        paketValidationHelper.value = "valid";
+      } else {
+        paketValidationHelper.value = "";
+      }
+    }
+    paketCheckboxes.forEach((checkbox) => {
+      checkbox.addEventListener("change", updatePaketValidation);
+    });
+    updatePaketValidation();
+    btnShowModal.addEventListener("click", function (event) {
+      event.preventDefault();
+      if (form.checkValidity()) {
+        const cabangSelect = document.getElementById("cabang");
+        const cabang = cabangSelect.options[cabangSelect.selectedIndex].text;
+        const nama = document.getElementById("nama").value;
+        const no_wa = document.getElementById("no_wa").value;
+        const alamat = document.getElementById("alamat").value;
+        const tgl_lahir = document.getElementById("tgl_lahir").value;
+        const jam_datang = document.getElementById("jam_datang").value;
+        const note = document.getElementById("note").value;
+        const paketChecked = document.querySelectorAll(
+          'input[name="paket"]:checked'
+        );
+        let paketListHTML = "";
+        paketChecked.forEach((cb) => {
+          paketListHTML +=
+            cb.labels[0].querySelector("strong").textContent.trim() + "<br>";
+        });
+        document.getElementById("konfirmasi-cabang").textContent = cabang;
+        document.getElementById("konfirmasi-nama").textContent = nama;
+        document.getElementById("konfirmasi-wa").textContent = no_wa;
+        document.getElementById("konfirmasi-alamat").textContent = alamat;
+        document.getElementById("konfirmasi-tgl-lahir").textContent = tgl_lahir;
+        document.getElementById("konfirmasi-jam-datang").textContent =
+          jam_datang;
+        document.getElementById("konfirmasi-note").textContent = note || "-";
+        document.getElementById("konfirmasi-paket").innerHTML = paketListHTML;
+        modal.show();
+      } else {
+        form.classList.add("was-validated");
+      }
+    });
+    btnSubmitForm.addEventListener("click", function () {
+      // (BARU) Ambil CSRF token dari form dan masukkan ke modal
+      // Ini adalah trik agar form bisa disubmit via JS
+      form.submit();
+    });
+    form.addEventListener("input", function () {
+      if (form.classList.contains("was-validated")) {
+        if (paketValidationHelper.value !== "") {
+          form.classList.remove("was-validated");
+        }
+      }
+    });
+  });
+</script>

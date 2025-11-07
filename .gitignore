@@ -1,0 +1,9 @@
+# Folder dependensi
+node_modules/
+
+# File environment (RAHASIA!)
+.env
+
+# Log dan file sistem
+npm-debug.log
+.DS_Store

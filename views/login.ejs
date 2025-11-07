@@ -1,0 +1,58 @@
+<%- include('partials/header') %>
+
+<div class="row justify-content-center mt-5">
+  <div class="col-md-4">
+    <div class="card shadow-lg border-0 rounded-4">
+      <div class="card-body p-4 p-md-5">
+        <div class="text-center mb-4">
+          <img
+            src="/img/logo.png"
+            alt="<%= appName %> Logo"
+            style="height: 50px; margin-bottom: 10px"
+          />
+          <h3 class="fw-bold mt-2">Login Admin<br /><%= appName %></h3>
+        </div>
+
+        <% if (error) { %>
+        <div class="alert alert-danger" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          <%= typeof error === 'object' ? error.error : error %>
+        </div>
+        <% } %>
+
+        <form action="/login" method="POST">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+
+          <div class="mb-3">
+            <label for="cabang" class="form-label">Pilih Cabang Anda</label>
+            <select class="form-select" id="cabang" name="cabang" required>
+              <option value="" disabled selected>-- Pilih Cabang --</option>
+              <% if (branches && branches.length > 0) { %> <%
+              branches.forEach(branch => { %>
+              <option value="<%= branch %>"><%= branch %></option>
+              <% }) %> <% } %>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input
+              type="password"
+              class="form-control"
+              id="password"
+              name="password"
+              required
+            />
+          </div>
+          <div class="d-grid">
+            <button type="submit" class="btn btn-primary btn-lg">
+              <i class="bi bi-box-arrow-in-right me-2"></i>Login
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,33 @@
+<%- include('partials/header') %>
+
+<div class="row justify-content-center">
+  <div class="col-md-7 col-lg-6">
+    <div class="card text-center shadow-lg border-0 rounded-4">
+      <div class="card-body p-4 p-md-5">
+        <i
+          class="bi bi-check-circle-fill text-success"
+          style="font-size: 5rem"
+        ></i>
+
+        <h2 class="card-title mt-3">Berhasil!</h2>
+        <p class="lead text-muted">
+          Antrian Anda telah dicatat di <strong><%= appName %></strong>.
+        </p>
+
+        <p>
+          Silakan tunggu notifikasi reminder dari kami. Harap simpan nomor
+          antrian Anda.
+        </p>
+        <a
+          href="/"
+          class="btn btn-outline-primary mt-3"
+          style="border-radius: 0.5rem"
+        >
+          <i class="bi bi-arrow-left me-2"></i>Kembali ke Form
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>
