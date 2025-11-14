@@ -50,6 +50,39 @@
         /* Kita gunakan shadow & border di utility class */
         border-radius: 1rem; /* Lebih bulat & modern */
       }
+
+      /* (BARU) Style untuk Status Member (Card Radio Button) */
+      .status-radio {
+        display: none; /* Sembunyikan radio button aslinya */
+      }
+
+      .status-check-label {
+        display: block;
+        border: 2px solid #e0e0e0; /* Border abu-abu netral */
+        border-radius: 0.75rem; /* Samakan dengan card */
+        padding: 1.5rem 1rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+        height: 100%; /* (BARU) Agar tingginya sama */
+      }
+
+      .status-check-label:hover {
+        background-color: #f8f9fa; /* Warna hover halus */
+      }
+
+      /* (BARU) Style saat dipilih (menggunakan warna brand Anda) */
+      .status-radio:checked + .status-check-label {
+        border-color: #6c5ce7; /* Warna brand Anda */
+        background-color: #f4f2ff; /* Warna ungu yang sangat muda */
+        box-shadow: 0 4px 10px rgba(108, 92, 231, 0.2);
+        transform: translateY(-2px);
+      }
+
+      .status-check-label .brand-icon {
+        font-size: 2.5rem; /* Sedikit lebih kecil agar pas */
+        color: #6c5ce7; /* Pastikan warnanya konsisten */
+      }
     </style>
   </head>
   <body class="bg-light">
