@@ -15,20 +15,27 @@ const PORT = process.env.PORT || 3000;
 
 const allBranches = ['Cabang 1', 'Cabang 2', 'Cabang 3', 'Cabang 4'];
 const isProduction = process.env.NODE_ENV === 'production';
-const appName = "Salon Cantik"; // <--- GANTI NAMA APLIKASI ANDA DI SINI
+const appName = "Salon Cantik"; // <--- UBAH NAMA APLIKASI ANDA DI SINI
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public'))); 
 app.use(express.urlencoded({ extended: true })); 
 
-// --- (Security Middleware) ---
+// =====================================
+// [SECURITY] Setup Middleware Keamanan
+// =====================================
 app.use(cookieParser());
 app.use(session({
   secret: process.env.SESSION_SECRET, 
   resave: false,
   saveUninitialized: false, 
-  cookie: { maxAge: 1000 * 60 * 60 * 8, httpOnly: true, secure: isProduction, sameSite: 'strict'} 
+  cookie: { 
+    maxAge: 1000 * 60 * 60 * 8, // 8 jam
+    httpOnly: true, 
+    secure: isProduction, 
+    sameSite: 'strict'
+  } 
 }));
 const csrfProtection = csurf({ cookie: true });
 app.use(csrfProtection);
@@ -36,7 +43,10 @@ const sanitizeInputs = (req, res, next) => {
   if (req.body) {
     for (const key in req.body) {
       if (typeof req.body[key] === 'string') {
-        req.body[key] = sanitizeHtml(req.body[key], { allowedTags: [], allowedAttributes: {} });
+        req.body[key] = sanitizeHtml(req.body[key], {
+          allowedTags: [],
+          allowedAttributes: {}
+        });
       }
     }
   }
@@ -96,51 +106,9 @@ app.get('/', async (req, res) => {
 });
 
 // =====================================
-// [DIRUBAH] API UNTUK CEK MEMBER
+// [DIHAPUS] RUTE API (check-user & get-user-data)
 // =====================================
-app.get('/api/check-user', async (req, res) => {
-  try {
-    const phone = req.query.phone;
-    if (!phone) return res.json({ found: false });
-
-    // Format nomor dulu
-    let formatted = phone.trim().replace(/[^0-9]/g, '');
-    if (formatted.startsWith('08')) formatted = '62' + formatted.substring(1);
-    else if (formatted.startsWith('8')) formatted = '62' + formatted;
-
-    // (DIRUBAH) Panggil fungsi baru yang aman
-    const user = await sheets.checkUserExists(formatted);
-    res.json(user); // Hanya kirim { found: true } atau { found: false }
-  } catch (err) {
-    console.error(err);
-    res.json({ found: false });
-  }
-});
-
-// =====================================
-// [BARU] API UNTUK VERIFIKASI & AMBIL DATA
-// =====================================
-app.get('/api/get-user-data', async (req, res) => {
-  try {
-    const { phone, tgl_lahir } = req.query;
-    if (!phone || !tgl_lahir) {
-      return res.json({ success: false });
-    }
-
-    // Format nomor
-    let formatted = phone.trim().replace(/[^0-9]/g, '');
-    if (formatted.startsWith('08')) formatted = '62' + formatted.substring(1);
-    else if (formatted.startsWith('8')) formatted = '62' + formatted;
-
-    // (BARU) Panggil fungsi verifikasi
-    const user = await sheets.verifyAndGetUser(formatted, tgl_lahir);
-    res.json(user); // Kirim { success: true, nama: '...', alamat: '...' } atau { success: false }
-  } catch (err) {
-    console.error(err);
-    res.json({ success: false });
-  }
-});
-
+// (Blok API dihapus dari sini)
 
 // (DIRUBAH) Rute /submit
 app.post('/submit', async (req, res) => {
@@ -160,9 +128,10 @@ app.post('/submit', async (req, res) => {
     
     const noAntrianUser = await sheets.addCustomer(
       nama, formatted_wa, paketString, 
-      tgl_lahir, jam_datang, 
-      alamat, 
-      note || '', // (DIRUBAH) Pastikan note tidak undefined
+      tgl_lahir || '', // (DIRUBAH) Kirim string kosong jika (member lama)
+      jam_datang, 
+      alamat || '',    // (DIRUBAH) Kirim string kosong jika (member lama)
+      note || '',
       cabang
     );
     
@@ -181,7 +150,7 @@ app.post('/submit', async (req, res) => {
   }
 });
 
-// Rute Sukses (Tidak Berubah)
+// Rute Sukses
 app.get('/sukses', (req, res) => {
   const data = req.session.successData;
   if (!data) { return res.redirect('/'); }
@@ -195,7 +164,7 @@ app.get('/sukses', (req, res) => {
 });
 
 // ==================
-// RUTE LOGIN / LOGOUT (Tidak Berubah)
+// RUTE LOGIN / LOGOUT
 // ==================
 app.get('/login', (req, res) => {
   res.render('login', { 
@@ -226,7 +195,7 @@ app.get('/logout', (req, res) => {
 });
 
 // ==================
-// RUTE ADMIN (DIPROTEKSI) (Tidak Berubah)
+// RUTE ADMIN (DIPROTEKSI)
 // ==================
 app.get('/admin', isAdmin, async (req, res) => {
   try {

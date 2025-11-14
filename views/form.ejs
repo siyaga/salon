@@ -14,102 +14,105 @@
         <form action="/submit" method="POST" id="form-antrian" novalidate>
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
-          <div class="mb-3">
-            <label for="cabang" class="form-label">Pilih Cabang</label>
-            <select class="form-select" id="cabang" name="cabang" required>
-              <option value="" disabled selected>-- Tentukan Lokasi Cabang --</option>
-              <% if (branches && branches.length > 0) { %>
-                <% branches.forEach(branch => { %>
-                  <option value="<%= branch %>"><%= branch %></option>
-                <% }) %>
-              <% } %>
-            </select>
-            <div class="invalid-feedback">Anda harus memilih cabang.</div>
-          </div>
-          
-          <div class="mb-3">
-            <label for="no_wa" class="form-label fw-bold">Nomor WhatsApp</label>
-            <div class="input-group has-validation">
-              <input type="tel" class="form-control" id="no_wa" name="no_wa" 
-                     placeholder="0812..." required pattern="^(\+62|62|0)8[0-9]{8,12}$">
-              <div class="invalid-feedback">Format nomor WA salah.</div>
+          <div id="step-1-cabang">
+            <div class="mb-3">
+              <label for="cabang" class="form-label fw-bold">1. Pilih Cabang</label>
+              <select class="form-select" id="cabang" name="cabang" required>
+                <option value="" disabled selected>-- Tentukan Lokasi Cabang --</option>
+                <% if (branches && branches.length > 0) { %>
+                  <% branches.forEach(branch => { %>
+                    <option value="<%= branch %>"><%= branch %></option>
+                  <% }) %>
+                <% } %>
+              </select>
+              <div class="invalid-feedback">Anda harus memilih cabang.</div>
             </div>
-            <div id="user-status" class="form-text mt-2">
-              </div>
-          </div>
+          </div> <div id="step-2-status" style="display: none;">
+            <hr class="my-4">
+            <div class="mb-3">
+              <label class="form-label fw-bold">2. Status Anda</label>
+              <div class="d-grid gap-2">
+                <input type="radio" class="btn-check" name="status_member" id="status-new" value="new" autocomplete="off" required>
+                <label class="btn btn-outline-secondary" for="status-new"><i class="bi bi-person-plus-fill me-2"></i>Saya Pelanggan Baru</label>
 
-          <div id="data-diri-group" style="display: none;">
-            <hr>
-            <p id="data-diri-title" class="fw-bold text-primary"></p>
+                <input type="radio" class="btn-check" name="status_member" id="status-member" value="member" autocomplete="off" required>
+                <label class="btn btn-outline-secondary" for="status-member"><i class="bi bi-person-check-fill me-2"></i>Saya Member Lama</label>
+              </div>
+            </div>
+          </div> <div id="step-3-data-diri" style="display: none;">
+            <hr class="my-4">
+            <h5 id="data-diri-title" class="fw-bold text-primary"></h5>
+            
+            <div class="mb-3">
+              <label for="no_wa" class="form-label">Nomor WhatsApp</label>
+              <input type="tel" class="form-control" id="no_wa" name="no_wa" placeholder="0812..." required pattern="^(\+62|62|0)8[0-9]{8,12}$">
+              <div class="invalid-feedback">Format nomor WA salah (cth: 0812...).</div>
+            </div>
             
             <div class="mb-3">
               <label for="nama" class="form-label">Nama Anda</label>
               <input type="text" class="form-control" id="nama" name="nama" required>
               <div class="invalid-feedback">Nama wajib diisi.</div>
             </div>
-
-            <div class="mb-3" id="verifikasi-tgl-lahir-group" style="display: none;">
-              <label for="verifikasi_tgl_lahir" class="form-label">Verifikasi Tanggal Lahir</label>
-              <input type="date" class="form-control" id="verifikasi_tgl_lahir" name="verifikasi_tgl_lahir">
-              <div class="form-text small text-danger" id="verifikasi-error-msg"></div>
+            
+            <div id="new-member-fields" style="display: none;">
+              <div class="mb-3">
+                <label for="tgl_lahir" class="form-label">Tanggal Lahir</label>
+                <input type="date" class="form-control" id="tgl_lahir" name="tgl_lahir" required>
+                <div class="form-text small text-muted">(untuk promo ulang tahun)</div>
+                <div class="invalid-feedback">Tanggal lahir wajib diisi.</div>
+              </div>
+              <div class="mb-3">
+                <label for="alamat" class="form-label">Alamat Singkat</label>
+                <textarea class="form-control" id="alamat" name="alamat" rows="2" placeholder="cth: Jl. Merdeka No. 10" required></textarea>
+                <div class="invalid-feedback">Alamat wajib diisi.</div>
+              </div>
             </div>
+          </div> <div id="step-4-paket-detail" style="display: none;">
+            <hr class="my-4">
+            <h5 class="fw-bold text-primary">Detail Reservasi</h5>
 
+            <div class="mb-3" id="paket-group">
+              <label class="form-label fw-bold">Pilih Paket (Bisa lebih dari satu)</label>
+              <% if (groupedPackages && groupedPackages.length > 0) { %>
+                <% groupedPackages.forEach((group, groupIndex) => { %>
+                  <h6 class="fw-bold mt-3 mb-2 ps-1 text-primary"><%= group.kategori %></h6>
+                  <% group.paket.forEach((paket, paketIndex) => { %>
+                    <div class="form-check ps-4 mb-2">
+                      <input class="form-check-input paket-checkbox" type="checkbox" 
+                             name="paket" value="<%= paket.nama %>" id="paket-<%= groupIndex %>-<%= paketIndex %>">
+                      <label class="form-check-label" for="paket-<%= groupIndex %>-<%= paketIndex %>">
+                        <strong class="d-block"><%= paket.nama %></strong>
+                        <span class="text-muted small"><i class="bi bi-clock"></i> <%= paket.durasi %></span>
+                        <span class="text-muted small d-block"><%= paket.deskripsi %></span>
+                      </label>
+                    </div>
+                  <% }) %>
+                <% }) %>
+              <% } else { %>
+                <p class="text-muted small">Gagal memuat paket.</p>
+              <% } %>
+              <input type="text" id="paket-validation-helper" required style="width: 0; height: 0; padding: 0; border: none; opacity: 0; position: absolute;">
+              <div class="invalid-feedback">Paket wajib dipilih (minimal satu).</div>
+            </div>
+            
             <div class="mb-3">
-              <label for="tgl_lahir" class="form-label">Tanggal Lahir</label>
-              <input type="date" class="form-control" id="tgl_lahir" name="tgl_lahir" required>
-              <div class="form-text small text-muted" style="margin-top: 0.25rem;">(untuk promo ulang tahun)</div>
-              <div class="invalid-feedback">Tanggal lahir wajib diisi.</div>
-            </div>
-
-            <div class="mb-3">
-              <label for="alamat" class="form-label">Alamat Singkat</label>
-              <textarea class="form-control" id="alamat" name="alamat" rows="2" placeholder="cth: Jl. Merdeka No. 10" required></textarea>
-              <div class="invalid-feedback">Alamat wajib diisi.</div>
-            </div>
-            <hr>
-          </div>
-          <div class="row">
-            <div class="col-md-12 mb-3"> <label for="jam_datang" class="form-label">Jam Reservasi</label>
+              <label for="jam_datang" class="form-label">Jam Reservasi</label>
               <input type="time" class="form-control" id="jam_datang" name="jam_datang" required>
               <div class="invalid-feedback">Jam reservasi wajib diisi.</div>
             </div>
-          </div>
-          
-          <div class="mb-3">
-            <label for="note" class="form-label">Note (Opsional)</label>
-            <textarea class="form-control" id="note" name="note" rows="2" placeholder="Kebutuhan khusus, alergi, request stylist, dll."></textarea>
-          </div>
-          
-          <div class="mb-3" id="paket-group">
-            <label class="form-label fw-bold">Pilih Paket</label>
-            <% if (groupedPackages && groupedPackages.length > 0) { %>
-              <% groupedPackages.forEach((group, groupIndex) => { %>
-                <h6 class="fw-bold mt-3 mb-2 ps-1 text-primary"><%= group.kategori %></h6>
-                <% group.paket.forEach((paket, paketIndex) => { %>
-                  <div class="form-check ps-4 mb-2">
-                    <input class="form-check-input" type="checkbox" 
-                           name="paket" value="<%= paket.nama %>" id="paket-<%= groupIndex %>-<%= paketIndex %>">
-                    <label class="form-check-label" for="paket-<%= groupIndex %>-<%= paketIndex %>">
-                      <strong class="d-block"><%= paket.nama %></strong>
-                      <span class="text-muted small"><i class="bi bi-clock"></i> <%= paket.durasi %></span>
-                      <span class="text-muted small d-block" style="font-size: 0.8em;"><%= paket.deskripsi %></span>
-                    </label>
-                  </div>
-                <% }) %>
-              <% }) %>
-            <% } else { %>
-              <p class="text-muted small">Gagal memuat paket.</p>
-            <% } %>
-            <input type="text" id="paket-validation-helper" required style="width: 0; height: 0; padding: 0; border: none; opacity: 0; position: absolute;">
-            <div class="invalid-feedback">Paket wajib dipilih (minimal satu).</div>
-          </div>
-
-          <div class="d-grid mt-4">
-            <button type="button" class="btn btn-primary btn-lg" id="btn-show-modal">
-              <i class="bi bi-ticket-perforated me-2"></i>Ambil Nomor Antrian
-            </button>
-          </div>
-        </form>
+            
+            <div class="mb-3">
+              <label for="note" class="form-label">Note (Opsional)</label>
+              <textarea class="form-control" id="note" name="note" rows="2" placeholder="Kebutuhan khusus, alergi, request stylist, dll."></textarea>
+            </div>
+            
+            <div class="d-grid mt-4">
+              <button type="button" class="btn btn-primary btn-lg" id="btn-show-modal">
+                <i class="bi bi-ticket-perforated me-2"></i>Ambil Nomor Antrian
+              </button>
+            </div>
+          </div> </form>
       </div>
     </div>
   </div>
@@ -148,148 +151,92 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-    // --- Element References ---
+    // --- Referensi Elemen ---
     const form = document.getElementById('form-antrian');
-    const waInput = document.getElementById('no_wa');
-    const namaInput = document.getElementById('nama');
-    const tglInput = document.getElementById('tgl_lahir');
+    const step2Status = document.getElementById('step-2-status');
+    const step3DataDiri = document.getElementById('step-3-data-diri');
+    const step4PaketDetail = document.getElementById('step-4-paket-detail');
+    
+    const statusTitle = document.getElementById('data-diri-title');
+    const newMemberFields = document.getElementById('new-member-fields');
+    const tglLahirInput = document.getElementById('tgl_lahir');
     const alamatInput = document.getElementById('alamat');
-    const statusDiv = document.getElementById('user-status');
-    const dataDiriGroup = document.getElementById('data-diri-group');
-    const dataDiriTitle = document.getElementById('data-diri-title');
-    const verifikasiGroup = document.getElementById('verifikasi-tgl-lahir-group');
-    const verifikasiInput = document.getElementById('verifikasi_tgl_lahir');
-    const verifikasiError = document.getElementById('verifikasi-error-msg');
-    let typingTimer;
+    
+    const radioNew = document.getElementById('status-new');
+    const radioMember = document.getElementById('status-member');
+    const cabangSelect = document.getElementById('cabang');
+    
+    // --- Helper Validasi Paket (untuk modal) ---
+    const paketValidationHelper = document.getElementById('paket-validation-helper');
+    function updatePaketValidation() {
+      const checkedCount = document.querySelectorAll('.paket-checkbox:checked').length;
+      paketValidationHelper.value = checkedCount > 0 ? "valid" : "";
+    }
+    // Tambahkan listener ke semua checkbox paket
+    document.querySelectorAll('.paket-checkbox').forEach(cb => {
+      cb.addEventListener('change', updatePaketValidation);
+    });
+    updatePaketValidation(); // Panggil saat load
 
-    // --- Helper Function ---
-    function showDataDiri(title, isUserLama = false) {
-      dataDiriGroup.style.display = 'block';
-      dataDiriTitle.innerText = title;
-      
-      // If EXISTING user, hide the real birthdate field
-      // and show the verification field
-      if (isUserLama) {
-        verifikasiGroup.style.display = 'block';
-        tglInput.closest('.mb-3').style.display = 'none'; // Hide the original birthdate field
-        
-        // Lock fields until verified
-        namaInput.readOnly = true;
-        tglInput.readOnly = true;
-        alamatInput.readOnly = true;
+    
+    // --- 1. Logika Tampilkan Step 2 (Status) ---
+    // Tampilkan Step 2 jika Step 1 (Cabang) sudah valid
+    cabangSelect.addEventListener('change', () => {
+      if (cabangSelect.value !== '') {
+        step2Status.style.display = 'block';
       } else {
-        // If NEW user, show all fields
-        verifikasiGroup.style.display = 'none';
-        tglInput.closest('.mb-3').style.display = 'block';
-        
-        // Ensure fields are not locked
-        namaInput.readOnly = false;
-        tglInput.readOnly = false;
-        alamatInput.readOnly = false;
+        // Sembunyikan semua step di bawahnya jika cabang diubah kembali
+        step2Status.style.display = 'none';
+        step3DataDiri.style.display = 'none';
+        step4PaketDetail.style.display = 'none';
       }
-    }
-
-    // --- 1. WA CHECK LOGIC (on keyup) ---
-    waInput.addEventListener('keyup', () => {
-      clearTimeout(typingTimer);
-      statusDiv.innerHTML = '<span class="text-muted fst-italic">Checking...</span>';
-      typingTimer = setTimeout(checkUserByPhone, 1000); // Wait 1 sec after typing
     });
 
-    async function checkUserByPhone() {
-      const phone = waInput.value;
-      if (phone.length < 10) {
-        statusDiv.innerHTML = '';
-        dataDiriGroup.style.display = 'none';
-        return;
-      }
-
-      try {
-        const res = await fetch(`/api/check-user?phone=${phone}`);
-        const data = await res.json();
-
-        if (data.found) {
-          // MEMBER FOUND
-          statusDiv.innerHTML = '<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Member Found</span>';
-          showDataDiri('Please verify your identity', true);
-        } else {
-          // NEW MEMBER
-          statusDiv.innerHTML = '<span class="badge bg-secondary">New Customer</span>';
-          showDataDiri('Please complete your data', false);
-        }
-      } catch (err) {
-        statusDiv.innerHTML = '';
-      }
+    // --- 2. Logika Tampilkan Step 3 & 4 (Data Diri & Paket) ---
+    function showRemainingForm() {
+      step3DataDiri.style.display = 'block';
+      step4PaketDetail.style.display = 'block';
     }
 
-    // --- 2. BIRTHDATE VERIFICATION LOGIC (on change) ---
-    verifikasiInput.addEventListener('change', async () => {
-      const phone = waInput.value;
-      const tgl_lahir = verifikasiInput.value;
-      verifikasiError.innerText = '';
+    radioNew.addEventListener('change', () => {
+      showRemainingForm();
+      newMemberFields.style.display = 'block';
+      statusTitle.innerText = "3. Lengkapi Data Diri (Pelanggan Baru)";
       
-      if (!phone || !tgl_lahir) return;
-
-      try {
-        const res = await fetch(`/api/get-user-data?phone=${phone}&tgl_lahir=${tgl_lahir}`);
-        const data = await res.json();
-
-        if (data.success) {
-          // VERIFICATION SUCCESS
-          verifikasiError.innerText = '';
-          verifikasiGroup.style.display = 'none'; // Hide verification field
-          tglInput.closest('.mb-3').style.display = 'block'; // Show original birthdate field
-          
-          // Auto-fill and lock
-          namaInput.value = data.nama;
-          tglInput.value = tgl_lahir; // Use the value from the verification input
-          alamatInput.value = data.alamat;
-          
-          namaInput.readOnly = true;
-          tglInput.readOnly = true;
-          alamatInput.readOnly = true;
-
-          // Add visual cue
-          namaInput.classList.add('is-valid');
-          tglInput.classList.add('is-valid');
-          alamatInput.classList.add('is-valid');
-        } else {
-          // VERIFICATION FAILED
-          verifikasiError.innerText = 'Incorrect birth date. Please try again.';
-          namaInput.classList.remove('is-valid');
-          tglInput.classList.remove('is-valid');
-          alamatInput.classList.remove('is-valid');
-        }
-      } catch (err) {
-        verifikasiError.innerText = 'Failed to verify data.';
-      }
+      // WAJIB diisi
+      tglLahirInput.required = true;
+      alamatInput.required = true;
+    });
+    
+    radioMember.addEventListener('change', () => {
+      showRemainingForm();
+      newMemberFields.style.display = 'none'; // Sembunyikan field Tgl Lahir & Alamat
+      statusTitle.innerText = "3. Lengkapi Data Diri (Member)";
+      
+      // TIDAK WAJIB diisi (karena akan dikirim kosong)
+      tglLahirInput.required = false;
+      alamatInput.required = false;
     });
 
-    // --- 3. FORM VALIDATION LOGIC (SAME AS BEFORE) ---
+    // --- 3. Logika Validasi Form (Sama seperti sebelumnya) ---
     const btnShowModal = document.getElementById('btn-show-modal');
     const modalElement = document.getElementById('konfirmasiModal');
     const modal = new bootstrap.Modal(modalElement);
     const btnSubmitForm = document.getElementById('btn-submit-form');
-    const paketCheckboxes = document.querySelectorAll('input[name="paket"]');
-    const paketValidationHelper = document.getElementById('paket-validation-helper');
-
-    function updatePaketValidation() {
-      const checkedCheckboxes = document.querySelectorAll('input[name="paket"]:checked');
-      paketValidationHelper.value = checkedCheckboxes.length > 0 ? "valid" : "";
-    }
-    paketCheckboxes.forEach(checkbox => checkbox.addEventListener('change', updatePaketValidation));
-    updatePaketValidation();
 
     btnShowModal.addEventListener('click', function(event) {
       event.preventDefault(); 
+      form.classList.remove('was-validated');
+      
+      // Update validasi paket sekali lagi sebelum cek
+      updatePaketValidation();
+
       if (form.checkValidity()) {
-        // Get data for modal
-        const cabangSelect = document.getElementById('cabang');
         document.getElementById('konfirmasi-cabang').textContent = cabangSelect.options[cabangSelect.selectedIndex].text;
-        document.getElementById('konfirmasi-nama').textContent = namaInput.value;
-        document.getElementById('konfirmasi-wa').textContent = waInput.value;
-        document.getElementById('konfirmasi-alamat').textContent = alamatInput.value;
-        document.getElementById('konfirmasi-tgl-lahir').textContent = tglInput.value;
+        document.getElementById('konfirmasi-nama').textContent = document.getElementById('nama').value;
+        document.getElementById('konfirmasi-wa').textContent = document.getElementById('no_wa').value;
+        document.getElementById('konfirmasi-alamat').textContent = alamatInput.value || '-'; // Tampilkan '-' jika kosong (untuk member)
+        document.getElementById('konfirmasi-tgl-lahir').textContent = tglLahirInput.value || '-'; // Tampilkan '-' jika kosong (untuk member)
         document.getElementById('konfirmasi-jam-datang').textContent = document.getElementById('jam_datang').value;
         document.getElementById('konfirmasi-note').textContent = document.getElementById('note').value || '-';
         
